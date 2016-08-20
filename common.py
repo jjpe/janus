@@ -41,4 +41,3 @@ toSocketSpec:    A SocketSpec named tuple that describes the outgoing socket'''
         fromSocket.send(b'ack')
         toSocket.send(message)
         version = json.loads(message.decode('utf-8'))
-        pprint(tag, "Broadcast version:", version)
