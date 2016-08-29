@@ -9,10 +9,19 @@ import gc
 from collections import namedtuple
 
 # Default addresses
-FROM_SOURCES = b'tcp://127.0.0.1:5000'
-TO_SERVERS =   b'tcp://127.0.0.1:5001'
-FROM_SERVERS = b'tcp://127.0.0.1:5002'
-TO_SINKS =     b'tcp://127.0.0.1:5003'
+FROM_SOURCES =  b'tcp://127.0.0.1:5000'
+TO_SERVERS =    b'tcp://127.0.0.1:5001'
+FROM_SERVERS =  b'tcp://127.0.0.1:5002'
+TO_SINKS =      b'tcp://127.0.0.1:5003'
+REPORTER_ADDR = b'tcp://127.0.0.1:9090'
+
+class Reporter:
+    '''Report performance information.'''
+    def __init__(self, context):
+        self.socket = context.socket(zmq.PUSH)
+        self.socket.connect(REPORTER_ADDR)
+    def report(self, dict):
+        self.socket.send_json(dict, zmq.NOBLOCK)
 
 SocketSpec = namedtuple('SocketSpec', ['type', 'address', 'name'])
 
@@ -36,8 +45,14 @@ toSocketSpec:    A SocketSpec named tuple that describes the outgoing socket'''
     toSocket = context.socket(toSocketSpec.type)
     toSocket.bind(toSocketSpec.address)
     log(tag, toSocketSpec.name, toSocketSpec.address)
+    reporter = Reporter(context)
     while True:
         message = fromSocket.recv() # msg type is bytes
         fromSocket.send(b'ack')
         toSocket.send(message)
-        version = json.loads(message.decode('utf-8'))
+        vop = json.loads(message.decode('utf-8')) # version or product
+        reporter.report({
+            'action' : 'broadcast msg',
+            'process' : tag,
+            'revision': int(vop['source'].split('|').pop()),
+        })
