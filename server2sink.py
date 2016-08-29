@@ -11,7 +11,7 @@ import common as c
 
 if __name__ == '__main__':
     gc.disable() # TODO: Use benchmarking to find out if this is useful
-    c.broker('[server->sink]',
+    c.broker('product-broker',
              'product',
              c.SocketSpec(zmq.REP, c.FROM_SERVERS, 'from servers'),
              c.SocketSpec(zmq.PUB, c.TO_SINKS,     'to sinks'))

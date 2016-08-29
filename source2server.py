@@ -11,7 +11,7 @@ import common as c
 
 if __name__ == "__main__":
     gc.disable() # TODO: Use benchmarking to find out if this is useful
-    c.broker('[source->server]',
+    c.broker('version-broker',
              'version',
              c.SocketSpec(zmq.REP, c.FROM_SOURCES, 'from sources'),
              c.SocketSpec(zmq.PUB, c.TO_SERVERS,   'to servers'))
